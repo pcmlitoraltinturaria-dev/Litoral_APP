@@ -100,17 +100,21 @@ function selecionarCodigo(c) {
   }
 }
 
-document.getElementById("select").onchange = e => {
-  if (e.target.value) selecionar(e.target.value);
-};
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("select").onchange = e => {
+    if (e.target.value) selecionar(e.target.value);
+  };
 
-document.getElementById("codigo").onchange = e => {
-  selecionarCodigo(e.target.value);
-};
+  document.getElementById("codigo").onchange = e => {
+    selecionarCodigo(e.target.value);
+  };
 
-document.getElementById("nome").onchange = e => {
-  document.getElementById("mant").innerText = e.target.value || "-";
-};
+  document.getElementById("nome").onchange = e => {
+    document.getElementById("mant").innerText = e.target.value || "-";
+  };
+
+  carregar();
+});
 
 function ultima(id) {
   const l = manutencoes.filter(x => Number(x.maquina_id) === Number(id));
