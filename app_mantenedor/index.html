@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App do Mantenedor</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f5f7;
+  color: #1f2937;
+}
+
+.app {
+  max-width: 700px;
+  margin: auto;
+  padding: 10px;
+}
+
+.card {
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+
+.linha-info {
+  display: grid;
+  grid-template-columns: 100px 70px 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.info-box {
+  background: #fafafa;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+}
+
+.status-ok { color: #166534; }
+.status-atencao { color: #b45309; }
+.status-atrasada { color: #b91c1c; }
+
+.sucesso {
+  background: #e8f5e9;
+  color: #1f6b3a;
+  padding: 8px;
+  border-radius: 6px;
+  display: none;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.guia {
+  border-top: 1px solid #ddd;
+  margin-top: 10px;
+  padding-top: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.checklist-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+.check-item-multi {
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.check-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.check-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.check-acoes label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.check-acoes input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.botoes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-finalizar,
+.btn-descartar {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-finalizar {
+  background: #166534;
+}
+
+.btn-descartar {
+  background: #7f1d1d;
+}
+
+@media (max-width: 640px) {
+  .linha-info,
+  .checklist-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">App do Mantenedor</h3>
+
+    <div id="msg" class="sucesso"></div>
+
+    <select id="nome">
+      <option value="">Selecione o mantenedor</option>
+      <option value="ANTONIO FISCHER">ANTONIO FISCHER</option>
+      <option value="EDUARDO BRANDAO">EDUARDO BRANDAO</option>
+      <option value="MAURICI">MAURICI</option>
+      <option value="ROGERIO BURG">ROGERIO BURG</option>
+      <option value="RONALTY SILVA">RONALTY SILVA</option>
+    </select>
+
+    <input id="codigo" placeholder="Número da máquina">
+
+    <select id="select">
+      <option value="">Selecionar máquina</option>
+    </select>
+  </div>
+
+  <div id="bloco" class="card" style="display:none;">
+    <h3 id="titulo" style="margin:0 0 8px;"></h3>
+
+    <div class="linha-info">
+      <div class="info-box"><b>Data</b><br><span id="data"></span></div>
+      <div class="info-box"><b>Hora</b><br><span id="hora"></span></div>
+      <div class="info-box"><b>Status</b><br><span id="status"></span></div>
+    </div>
+
+    <div class="info-box" style="margin-bottom:8px;">
+      <b>Mantenedor</b><br>
+      <span id="mant">-</span>
+    </div>
+
+    <div id="checklist" class="checklist-wrap"></div>
+
+    <div style="height:10px;"></div>
+
+    <textarea id="feito" placeholder="O que foi feito"></textarea>
+    <input id="pecas" placeholder="Peças trocadas">
+    <textarea id="detalhes" placeholder="Detalhes"></textarea>
+
+    <div class="botoes">
+      <button class="btn-finalizar" onclick="salvar()">Finalizar</button>
+      <button class="btn-descartar" onclick="descartar()">Descartar</button>
+    </div>
+
+    <div id="ultima" class="guia"></div>
+  </div>
+
+</div>
+
+<script>
+const API = "http://192.168.0.185:8000";
+
+let maquinas = [];
+let manutencoes = [];
+let atual = null;
+
+const checklist = [
+  { nome: "Correias", acoes: ["Inspeção", "Troca"] },
+  { nome: "Pressão", acoes: ["Calibrar"] },
+  { nome: "Vazamentos", acoes: ["Inspeção"] },
+  { nome: "Lubrificação", acoes: ["Inspeção"] },
+  { nome: "Temperatura", acoes: ["Calibrar"] },
+  { nome: "Válvulas", acoes: ["Testar"] },
+  { nome: "Ruídos", acoes: ["Inspecionar"] },
+  { nome: "Fixações", acoes: ["Inspecionar"] },
+  { nome: "Limpeza", acoes: ["Inspecionar"] },
+  { nome: "Funcionamento", acoes: ["Testar todos os pontos"] },
+  { nome: "Rolamento Molinelo", acoes: ["Inspeção", "Trocar"] },
+  { nome: "Rolamento Bomba", acoes: ["Inspeção", "Trocar"] },
+  { nome: "Borracha Molinelo", acoes: ["Inspeção", "Trocar"] },
+  { nome: "Vedação Válvulas", acoes: ["Inspeção"] },
+  { nome: "Vedação Portas", acoes: ["Inspeção", "Trocar"] }
+];
+
+function hoje() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function hora() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+function formatar(d) {
+  if (!d) return "-";
+  const p = String(d).split("-");
+  if (p.length !== 3) return d;
+  return p[2] + "/" + p[1] + "/" + p[0];
+}
+
+function status(m) {
+  if (m && m.status_atual) return m.status_atual;
+  if (!m || !m.ultima_manutencao) return "Atrasada";
+  const dias = (new Date() - new Date(m.ultima_manutencao)) / 86400000;
+  if (dias <= Number(m.intervalo_dias || 30)) return "OK";
+  if (dias <= Number(m.intervalo_dias || 30) + Number(m.tolerancia_dias || 7)) return "Atenção";
+  return "Atrasada";
+}
+
+function msg(t) {
+  const el = document.getElementById("msg");
+  el.innerText = t;
+  el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 2200);
+}
+
+HT_13180 → HT-1318
+async function carregar() {
+  maquinas = await (await fetch(API + "/api/maquinas")).json();
+  manutencoes = await (await fetch(API + "/api/manutencoes")).json();
+
+  const s = document.getElementById("select");
+  s.innerHTML = '<option value="">Selecionar máquina</option>';
+
+  maquinas
+    .sort((a, b) => String(a.codigo || "").localeCompare(String(b.codigo || ""), undefined, { numeric: true }))
+    .forEach(m => {
+      const o = document.createElement("option");
+      o.value = m.id;
+      o.text = nomeCurtoMaquina(m);
+      s.appendChild(o);
+    });
+
+  const p = new URLSearchParams(location.search).get("m");
+  if (p) selecionarCodigo(p);
+}
+
+function selecionar(id) {
+  atual = maquinas.find(x => Number(x.id) === Number(id));
+  if (!atual) return;
+  render();
+}
+
+function selecionarCodigo(c) {
+  const texto = String(c).trim().toLowerCase();
+  const m = maquinas.find(x =>
+    String(x.codigo || "").toLowerCase() === texto ||
+    String(x.id || "").toLowerCase() === texto ||
+    String(x.nome || "").toLowerCase() === texto
+  );
+  if (m) {
+    document.getElementById("select").value = m.id;
+    document.getElementById("codigo").value = m.codigo || "";
+    selecionar(m.id);
+  }
+}
+
+document.getElementById("select").onchange = e => {
+  if (e.target.value) selecionar(e.target.value);
+};
+
+document.getElementById("codigo").onchange = e => {
+  selecionarCodigo(e.target.value);
+};
+
+document.getElementById("nome").onchange = e => {
+  document.getElementById("mant").innerText = e.target.value || "-";
+};
+
+function ultima(id) {
+  const l = manutencoes.filter(x => Number(x.maquina_id) === Number(id));
+  return l.sort((a, b) => String(b.data || "").localeCompare(String(a.data || "")))[0];
+}
+
+function renderUltima(id) {
+  const u = ultima(id);
+  const el = document.getElementById("ultima");
+
+  if (!u) {
+    el.innerHTML = "<b>Última manutenção:</b><br>Sem registro";
+    return;
+  }
+
+  el.innerHTML =
+    "<b>Última manutenção</b><br>" +
+    "Data: " + formatar(u.data) + "<br>" +
+    "Checklist: " + (Array.isArray(u.checklist) && u.checklist.length ? u.checklist.join(", ") : "-") + "<br>" +
+    "Resumo: " + (u.o_que_foi_feito || "-") + "<br>" +
+    "Peças: " + (Array.isArray(u.pecas_trocadas) && u.pecas_trocadas.length ? u.pecas_trocadas.join(", ") : "-");
+}
+
+function render() {
+  document.getElementById("bloco").style.display = "block";
+  document.getElementById("titulo").innerText = atual.nome;
+
+  document.getElementById("data").innerText = formatar(hoje());
+  document.getElementById("hora").innerText = hora();
+
+  const s = status(atual);
+  const el = document.getElementById("status");
+  el.innerText = s;
+  el.className = s === "OK" ? "status-ok" : s === "Atenção" ? "status-atencao" : "status-atrasada";
+
+  document.getElementById("checklist").innerHTML = checklist.map(item => `
+    <div class="check-item-multi">
+      <div class="check-titulo">${item.nome}</div>
+      <div class="check-acoes">
+        ${item.acoes.map(acao => `
+          <label>
+            <input type="checkbox" value="${item.nome} - ${acao}">
+            <span>${acao}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  document.getElementById("feito").value = "";
+  document.getElementById("pecas").value = "";
+  document.getElementById("detalhes").value = "";
+  document.getElementById("mant").innerText = document.getElementById("nome").value || "-";
+
+  renderUltima(atual.id);
+}
+
+function limparTela() {
+  document.getElementById("bloco").style.display = "none";
+  document.getElementById("select").value = "";
+  document.getElementById("codigo").value = "";
+  document.getElementById("nome").value = "";
+  document.getElementById("mant").innerText = "-";
+  document.getElementById("feito").value = "";
+  document.getElementById("pecas").value = "";
+  document.getElementById("detalhes").value = "";
+  atual = null;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function descartar() {
+  if (!atual) return;
+  if (!confirm("Deseja descartar este preenchimento?")) return;
+  limparTela();
+  msg("Registro descartado");
+}
+
+async function salvar() {
+  if (!atual) return alert("Selecione máquina");
+
+  const nome = document.getElementById("nome").value;
+  if (!nome) return alert("Selecione o mantenedor");
+
+  if (!confirm("Deseja finalizar a manutenção e gravar o registro?")) return;
+
+  const checks = [...document.querySelectorAll("#checklist input:checked")].map(x => x.value);
+
+  const payload = {
+    maquina_id: atual.id,
+    maquina_codigo: atual.codigo,
+    maquina_nome: atual.nome,
+    data: hoje(),
+    horario: hora(),
+    tipo: "Preventiva",
+    status: status(atual),
+    mantenedor: nome,
+    checklist: checks,
+    o_que_foi_feito: document.getElementById("feito").value,
+    pecas_trocadas: document.getElementById("pecas").value.split(",").map(x => x.trim()).filter(Boolean),
+    detalhes: document.getElementById("detalhes").value
+  };
+
+  const resposta = await fetch(API + "/api/manutencoes/mobile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!resposta.ok) {
+    alert("Erro ao gravar o registro.");
+    return;
+  }
+
+  limparTela();
+  msg("Registro guardado");
+}
+
+carregar();
+</script>
+
+</body>
+</html>

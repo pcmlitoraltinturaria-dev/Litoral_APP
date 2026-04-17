@@ -1,0 +1,93 @@
+[
+  {
+    "maquina_id": 41,
+    "maquina_codigo": "41",
+    "maquina_nome": "Rama Unitech_12010",
+    "data": "2026-04-01",
+    "tipo": "Preventiva",
+    "status": "OK",
+    "checklist": [
+      "Verificar nível de óleo",
+      "Verificar vazamentos",
+      "Inspecionar válvulas"
+    ],
+    "o_que_foi_feito": "",
+    "pecas_trocadas": [],
+    "detalhes": "",
+    "origem": "app_mobile_web",
+    "id": 1
+  },
+  {
+    "maquina_id": 41,
+    "maquina_codigo": "41",
+    "maquina_nome": "Rama Unitech_12010",
+    "data": "2026-04-01",
+    "tipo": "Preventiva",
+    "status": "OK",
+    "checklist": [],
+    "o_que_foi_feito": "",
+    "pecas_trocadas": [],
+    "detalhes": "",
+    "origem": "app_mobile_web",
+    "id": 2
+  },
+  {
+    "maquina_id": 41,
+    "maquina_codigo": "41",
+    "maquina_nome": "Rama Unitech_12010",
+    "data": "2026-04-01",
+    "tipo": "Preventiva",
+    "status": "OK",
+    "checklist": [
+      "Verificar nível de óleo",
+      "Conferir pressão de trabalho",
+      "Verificar vazamentos"
+    ],
+    "o_que_foi_feito": "",
+    "pecas_trocadas": [],
+    "detalhes": "",
+    "origem": "app_mobile_web",
+    "id": 3
+  },
+  {
+    "maquina_id": 184,
+    "maquina_codigo": "184",
+    "maquina_nome": "HT_13180",
+    "data": "2026-04-01",
+    "tipo": "Preventiva",
+    "status": "Atrasada",
+    "checklist": [
+      "Verificar ruídos anormais",
+      "Conferir fixações",
+      "Checar limpeza geral",
+      "Testar funcionamento"
+    ],
+    "o_que_foi_feito": "Foi testado para ver o api",
+    "pecas_trocadas": [
+      "Nenhuma"
+    ],
+    "detalhes": "Somente teste",
+    "origem": "app_mobile_web",
+    "id": 4
+  },
+  {
+    "maquina_id": 184,
+    "maquina_codigo": "184",
+    "maquina_nome": "HT_13180",
+    "data": "2026-04-01",
+    "tipo": "Preventiva",
+    "status": "OK",
+    "checklist": [
+      "Verificar nível de óleo",
+      "Inspecionar correias",
+      "Conferir pressão de trabalho"
+    ],
+    "o_que_foi_feito": "Segundo teste",
+    "pecas_trocadas": [
+      "Nenhuma"
+    ],
+    "detalhes": "Testando novamente",
+    "origem": "app_mobile_web",
+    "id": 5
+  }
+]

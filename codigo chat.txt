@@ -1,0 +1,61 @@
+Estou reiniciando um projeto do zero.
+
+CONTEXTO
+Eu tentei criar um sistema de manutenção preventiva com FastAPI/PostgreSQL, mas ficou complexo demais para o momento. Agora quero recomeçar de forma muito mais simples.
+
+NOVA DIREÇÃO DO PROJETO
+Quero um sistema visual e simples, focado primeiro em visualização das máquinas e histórico de manutenção.
+
+IDEIA CENTRAL
+Quero uma interface com o layout da fábrica, mostrando as máquinas posicionadas visualmente.
+Cada máquina deve mostrar o último estado da manutenção preventiva.
+Ao clicar na máquina, deve abrir uma nova tela/aba com o histórico completo dela.
+
+FUNCIONALIDADES INICIAIS
+- Visualizar layout da fábrica
+- Visualizar máquinas nesse layout
+- Ver status atual de cada máquina
+- Clicar na máquina e abrir histórico
+- Ver tudo que foi realizado nela ao longo do tempo
+
+STATUS POSSÍVEIS
+- OK
+- Atenção
+- Atrasada
+
+ESTRUTURA MÍNIMA DE DADOS
+Maquinas:
+- id
+- nome
+- setor
+- pos_x
+- pos_y
+
+Manutencoes:
+- id
+- maquina_id
+- data
+- tipo
+- status
+- descricao
+
+PRIORIDADES
+1. Simplicidade
+2. Interface visual
+3. Facilidade para testar
+4. Evolução gradual
+
+NÃO QUERO AGORA
+- dashboard complexo
+- autenticação
+- upload de imagens
+- lógica pesada
+- arquitetura exagerada
+
+O QUE QUERO DE VOCÊ
+Quero que você assuma esse projeto a partir daqui com foco em simplicidade.
+Primeiro me entregue uma solução mínima funcional e fácil de rodar.
+Pode começar com HTML/CSS/JS simples ou outra alternativa leve.
+Depois evoluímos para backend e banco se fizer sentido.
+
+Por favor, proponha a estrutura mais simples possível e já comece a montar a primeira versão.

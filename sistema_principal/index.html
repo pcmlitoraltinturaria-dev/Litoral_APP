@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Principal de Manutenção</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #eef2f5;
+      color: #1f2937;
+    }
+    .app {
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .topo {
+      margin-bottom: 14px;
+    }
+    .topo h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+    .topo p {
+      margin: 0;
+      color: #5b6470;
+      font-size: 14px;
+    }
+    .bloco {
+      border: 1px solid #d8dde3;
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+    .campo {
+      margin-bottom: 12px;
+    }
+    .campo label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    input, textarea, button, select {
+      font: inherit;
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #cfd6dd;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .btn-principal, .btn-secundario, .btn-data {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .btn-principal {
+      background: #111827;
+      color: #fff;
+    }
+    .btn-secundario, .btn-data {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    #layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #d8dde3;
+      border-radius: 16px;
+      padding: 12px;
+      min-height: calc(100vh - 170px);
+      align-content: start;
+    }
+    .maquina {
+      min-height: 76px;
+      border-radius: 10px;
+      padding: 8px;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      overflow: hidden;
+    }
+    .maquina:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+    .maquina.ok { background: #2e9d57; }
+    .maquina.atencao { background: #d7a400; color: #222; }
+    .maquina.atrasada { background: #c94141; }
+    .maquina-codigo {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      opacity: 0.95;
+    }
+    .maquina-nome {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      height: 30px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      margin-bottom: 6px;
+    }
+    .maquina-data {
+      font-size: 11px;
+      opacity: 0.95;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .modal-overlay.aberto {
+      display: flex;
+    }
+    .modal {
+      width: min(1120px, 96vw);
+      max-height: 92vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+      padding: 18px;
+    }
+    .modal-topo {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .modal-topo h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+    .modal-topo p {
+      margin: 0;
+      color: #667085;
+      font-size: 14px;
+    }
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+    }
+    .estado-vazio {
+      color: #667085;
+      font-size: 14px;
+    }
+    .lista-datas {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-data {
+      width: 100%;
+      text-align: left;
+    }
+    .registro {
+      border: 1px solid #e3e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      background: #fafbfc;
+      margin-bottom: 10px;
+    }
+    .registro-data {
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .registro-meta {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .tag-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tag-ok { background: #dff4e6; color: #216a3a; }
+    .tag-atencao { background: #fff1c7; color: #7a5c00; }
+    .tag-atrasada { background: #fde2e2; color: #8f2e2e; }
+    .regra-box {
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 16px;
+      padding: 10px 12px;
+      border: 1px solid #d8dde3;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+    .regra-box label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .regra-campo-pequeno {
+      width: 72px;
+      flex: 0 0 72px;
+    }
+    .regra-campo-pequeno input {
+      text-align: center;
+      padding: 8px 6px;
+    }
+    .regra-info {
+      width: 100%;
+      font-size: 13px;
+      color: #475467;
+      margin-top: 2px;
+    }
+    .bloco-checklist-historico {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #d1d5db;
+    }
+    .titulo-checklist-historico {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+    .lista-checklist-historico {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .item-checklist-historico {
+      display: inline-flex;
+      align-items: center;
+      background: #e8f5e9;
+      color: #1f6b3a;
+      border: 1px solid #b7dfbf;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .manual-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .manual-form .full {
+      grid-column: 1 / -1;
+    }
+    ul {
+      margin: 6px 0 0 18px;
+      padding: 0;
+    }
+    @media (max-width: 900px) {
+      .modal-grid,
+      .manual-form {
+        grid-template-columns: 1fr;
+      }
+      #layout {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topo">
+      <h1>Layout da fábrica</h1>
+      <p>Máquinas, status, histórico e regras carregados da API.</p>
+    </div>
+
+    <div class="bloco">
+      <div class="campo" style="margin-bottom:0;">
+        <label for="busca-maquina">Buscar máquina por número ou nome</label>
+        <input id="busca-maquina" type="text" placeholder="Ex.: 184, HT_13180, compressor..." />
+      </div>
+    </div>
+
+    <div id="layout"></div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-topo">
+        <div>
+          <h2 id="modal-titulo">Manutenção da máquina</h2>
+          <p id="modal-subtitulo">Histórico e configuração da máquina</p>
+        </div>
+        <button type="button" class="btn-secundario" id="btn-fechar-modal">Fechar</button>
+      </div>
+
+      <div id="regra-manutencao-box"></div>
+
+      <div class="bloco">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <h3 style="margin:0;">Adicionar manutenção manual</h3>
+          <button type="button" class="btn-principal" id="btn-toggle-manual">+ Nova manutenção manual</button>
+        </div>
+
+        <div id="form-manual" style="display:none; margin-top:12px;">
+          <div class="manual-form">
+            <div>
+              <label for="manual-mantenedor">Mantenedor</label>
+              <select id="manual-mantenedor">
+                <option value="">Selecione</option>
+                <option value="ANTONIO FISCHER">ANTONIO FISCHER</option>
+                <option value="EDUARDO BRANDAO">EDUARDO BRANDAO</option>
+                <option value="MAURICI">MAURICI</option>
+                <option value="ROGERIO BURG">ROGERIO BURG</option>
+                <option value="RONALTY SILVA">RONALTY SILVA</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="manual-tipo">Tipo</label>
+              <select id="manual-tipo">
+                <option value="Preventiva">Preventiva</option>
+                <option value="Corretiva">Corretiva</option>
+                <option value="Inspeção">Inspeção</option>
+              </select>
+            </div>
+
+            <div class="full">
+              <label for="manual-feito">O que foi feito</label>
+              <textarea id="manual-feito" placeholder="Descreva o serviço realizado"></textarea>
+            </div>
+
+            <div class="full">
+              <label for="manual-pecas">Peças trocadas</label>
+              <input id="manual-pecas" placeholder="Separar por vírgula" />
+            </div>
+
+            <div class="full">
+              <label for="manual-detalhes">Detalhes</label>
+              <textarea id="manual-detalhes" placeholder="Observações adicionais"></textarea>
+            </div>
+
+            <div class="full">
+              <button type="button" class="btn-principal" id="btn-salvar-manual">Salvar manutenção</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="bloco">
+          <h3>Datas de manutenção</h3>
+          <div id="lista-datas" class="estado-vazio">Selecione uma máquina.</div>
+        </div>
+
+        <div>
+          <div class="bloco">
+            <h3>Detalhes da manutenção</h3>
+            <div id="detalhe-manutencao" class="estado-vazio">Selecione uma data para ver os detalhes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://192.168.0.185:8000";
+    let maquinas = [];
+    let manutencoes = [];
+    let maquinaSelecionadaId = null;
+    let manutencaoSelecionadaId = null;
+
+    function formatarData(dataISO) {
+      if (!dataISO) return "Sem registro";
+      const partes = String(dataISO).split("-");
+      if (partes.length !== 3) return dataISO;
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function hojeISO() {
+      return new Date().toISOString().split("T")[0];
+    }
+
+    function horaAgora() {
+      const d = new Date();
+      return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    }
+
+    function obterClasseStatus(status) {
+      if (status === "OK") return "ok";
+      if (status === "Atenção") return "atencao";
+      if (status === "Atrasada") return "atrasada";
+      return "ok";
+    }
+
+    function obterTagStatus(status) {
+      if (status === "OK") return "tag-status tag-ok";
+      if (status === "Atenção") return "tag-status tag-atencao";
+      if (status === "Atrasada") return "tag-status tag-atrasada";
+      return "tag-status tag-ok";
+    }
+
+    function obterRegistrosDaMaquina(maquinaId) {
+      return manutencoes
+        .filter(item => Number(item.maquina_id) === Number(maquinaId))
+        .sort((a, b) => String(b.data || "").localeCompare(String(a.data || "")));
+    }
+
+    async function carregarDados() {
+      const [respMaquinas, respManutencoes] = await Promise.all([
+        fetch(API + "/api/maquinas"),
+        fetch(API + "/api/manutencoes")
+      ]);
+
+      maquinas = await respMaquinas.json();
+      manutencoes = await respManutencoes.json();
+      renderizarLayout();
+    }
+
+    function renderizarLayout() {
+      const layout = document.getElementById("layout");
+      const termo = (document.getElementById("busca-maquina").value || "").trim().toLowerCase();
+      layout.innerHTML = "";
+
+      maquinas
+        .filter(maquina => {
+          if (!termo) return true;
+          return (
+            String(maquina.codigo).toLowerCase().includes(termo) ||
+            String(maquina.id).toLowerCase().includes(termo) ||
+            String(maquina.nome).toLowerCase().includes(termo)
+          );
+        })
+        .forEach(maquina => {
+          const dataUltima = maquina.ultima_manutencao ? formatarData(maquina.ultima_manutencao) : "Sem registro";
+          const status = maquina.status_atual || "OK";
+
+          const card = document.createElement("div");
+          card.className = `maquina ${obterClasseStatus(status)}`;
+          card.innerHTML = `
+            <div class="maquina-codigo">ID ${maquina.codigo}</div>
+            <div class="maquina-nome">${maquina.nome}</div>
+            <div class="maquina-data">Última: ${dataUltima}</div>
+          `;
+          card.addEventListener("click", () => abrirModalMaquina(maquina.id));
+          layout.appendChild(card);
+        });
+    }
+
+    function abrirModalMaquina(maquinaId) {
+      maquinaSelecionadaId = maquinaId;
+      manutencaoSelecionadaId = null;
+      const maquina = maquinas.find(item => Number(item.id) === Number(maquinaId));
+      document.getElementById("modal-titulo").textContent = maquina.nome;
+      document.getElementById("modal-subtitulo").textContent = `ID ${maquina.codigo} - ${maquina.categoria}`;
+      document.getElementById("form-manual").style.display = "none";
+      limparFormularioManual();
+      renderizarRegraManutencao(maquinaId);
+      renderizarListaDatas(maquinaId);
+      renderizarDetalheManutencao(null);
+      document.getElementById("modal-overlay").classList.add("aberto");
+    }
+
+    function fecharModal() {
+      document.getElementById("modal-overlay").classList.remove("aberto");
+      document.getElementById("regra-manutencao-box").innerHTML = "";
+      document.getElementById("form-manual").style.display = "none";
+    }
+
+    function limparFormularioManual() {
+      document.getElementById("manual-mantenedor").value = "";
+      document.getElementById("manual-tipo").value = "Preventiva";
+      document.getElementById("manual-feito").value = "";
+      document.getElementById("manual-pecas").value = "";
+      document.getElementById("manual-detalhes").value = "";
+    }
+
+    async function salvarRegraMaquina(maquinaId) {
+      const intervalo = Number(document.getElementById("intervalo-dias").value || 30);
+      const tolerancia = Number(document.getElementById("tolerancia-dias").value || 7);
+
+      const resp = await fetch(API + `/api/maquinas/${maquinaId}/regra`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intervalo_dias: intervalo, tolerancia_dias: tolerancia })
+      });
+
+      if (!resp.ok) {
+        alert("Não foi possível salvar a regra da máquina.");
+        return;
+      }
+
+      await carregarDados();
+      renderizarRegraManutencao(maquinaId);
+      renderizarListaDatas(maquinaId);
+    }
+
+    function renderizarRegraManutencao(maquinaId) {
+      const maquina = maquinas.find(item => Number(item.id) === Number(maquinaId));
+      const box = document.getElementById("regra-manutencao-box");
+      box.innerHTML = `
+        <div class="regra-box">
+          <div class="regra-campo-pequeno">
+            <label>Intervalo</label>
+            <input id="intervalo-dias" type="number" min="1" max="99" value="${Number(maquina.intervalo_dias || 30)}" />
+          </div>
+          <div class="regra-campo-pequeno">
+            <label>Tolerância</label>
+            <input id="tolerancia-dias" type="number" min="0" max="99" value="${Number(maquina.tolerancia_dias || 7)}" />
+          </div>
+          <button type="button" class="btn-principal" id="btn-salvar-regra">Salvar</button>
+          <div class="regra-info">Última: ${maquina.ultima_manutencao ? formatarData(maquina.ultima_manutencao) : "Sem registro"} | Próxima: ${maquina.proxima_prevista ? formatarData(maquina.proxima_prevista) : "-"} | Status: ${maquina.status_atual || "-"}</div>
+        </div>
+      `;
+
+      document.getElementById("btn-salvar-regra").addEventListener("click", function() {
+        salvarRegraMaquina(maquinaId);
+      });
+    }
+
+    function renderizarListaDatas(maquinaId) {
+      const container = document.getElementById("lista-datas");
+      const registros = obterRegistrosDaMaquina(maquinaId);
+
+      if (registros.length === 0) {
+        container.className = "estado-vazio";
+        container.textContent = "Sem datas de manutenção para esta máquina.";
+        return;
+      }
+
+      const grupos = [];
+      registros.forEach(registro => {
+        const tipoNormalizado = String(registro.tipo || "").startsWith("Preventiva") ? "Preventiva" : registro.tipo;
+        const chave = `${registro.data}__${tipoNormalizado}`;
+        const existente = grupos.find(g => g.chave === chave);
+
+        if (existente) {
+          existente.registros.push(registro);
+        } else {
+          grupos.push({
+            chave,
+            data: registro.data,
+            tipo: tipoNormalizado,
+            registros: [registro]
+          });
+        }
+      });
+
+      container.className = "lista-datas";
+      container.innerHTML = grupos.map((grupo, index) => `
+        <button type="button" class="btn-data" data-grupo="${index}">
+          ${formatarData(grupo.data)} - ${grupo.tipo}${grupo.registros.length > 1 ? ` (${grupo.registros.length})` : ""}
+        </button>
+      `).join("");
+
+      container.querySelectorAll(".btn-data").forEach(botao => {
+        botao.addEventListener("click", function() {
+          const grupo = grupos[Number(this.dataset.grupo)];
+          manutencaoSelecionadaId = grupo.registros[0].id;
+          renderizarDetalheManutencaoGrupo(grupo.registros);
+        });
+      });
+    }
+
+    function extrairChecklistDosDetalhes(detalhes, registro) {
+      if (Array.isArray(registro.checklist) && registro.checklist.length > 0) {
+        return { texto: detalhes || "-", itens: registro.checklist.filter(Boolean) };
+      }
+
+      if (!detalhes || detalhes.indexOf("Checklist:") === -1) {
+        return { texto: detalhes || "-", itens: [] };
+      }
+
+      const partes = detalhes.split("Checklist:");
+      const textoBase = partes[0].trim().replace(/\|$/, "").trim();
+      const itens = partes[1].split(",").map(item => item.trim()).filter(Boolean);
+      return { texto: textoBase || "-", itens };
+    }
+
+    function renderizarDetalheManutencao(registroId) {
+      const container = document.getElementById("detalhe-manutencao");
+      if (!registroId) {
+        container.className = "estado-vazio";
+        container.textContent = "Selecione uma data para ver os detalhes.";
+        return;
+      }
+      const registro = manutencoes.find(item => Number(item.id) === Number(registroId));
+      if (!registro) {
+        container.className = "estado-vazio";
+        container.textContent = "Registro não encontrado.";
+        return;
+      }
+      renderizarDetalheManutencaoGrupo([registro]);
+    }
+
+    function renderizarDetalheManutencaoGrupo(registros) {
+      const container = document.getElementById("detalhe-manutencao");
+      if (!registros || registros.length === 0) {
+        container.className = "estado-vazio";
+        container.textContent = "Selecione uma data para ver os detalhes.";
+        return;
+      }
+      container.className = "";
+      container.innerHTML = registros.map(registro => {
+        const checklistExtraido = extrairChecklistDosDetalhes(registro.detalhes, registro);
+        const pecasHtml = Array.isArray(registro.pecas_trocadas) && registro.pecas_trocadas.length > 0
+          ? "<ul>" + registro.pecas_trocadas.filter(Boolean).map(peca => `<li>${peca}</li>`).join("") + "</ul>"
+          : " -";
+        const checklistHtml = checklistExtraido.itens.length > 0
+          ? '<div class="bloco-checklist-historico"><div class="titulo-checklist-historico">Itens do checklist realizados</div><div class="lista-checklist-historico">' + checklistExtraido.itens.map(item => `<span class="item-checklist-historico">✓ ${item}</span>`).join("") + '</div></div>'
+          : "";
+        const mantenedorHtml = registro.mantenedor ? `<div style="margin-top:8px;"><strong>Mantenedor:</strong> ${registro.mantenedor}${registro.horario ? ` às ${registro.horario}` : ""}</div>` : "";
+
+        return '<div class="registro">' +
+          '<div class="registro-data">' + formatarData(registro.data) + '</div>' +
+          '<div class="registro-meta">' + (registro.tipo || "-") + ' - <span class="' + obterTagStatus(registro.status || "OK") + '">' + (registro.status || "-") + '</span></div>' +
+          '<div><strong>O que foi feito:</strong> ' + (registro.o_que_foi_feito || "-") + '</div>' +
+          '<div style="margin-top:8px;"><strong>Peças trocadas:</strong> ' + pecasHtml + '</div>' +
+          '<div style="margin-top:8px;"><strong>Detalhes:</strong> ' + checklistExtraido.texto + '</div>' +
+          mantenedorHtml +
+          checklistHtml +
+          '</div>';
+      }).join("");
+    }
+
+    async function salvarManutencaoManual() {
+      if (!maquinaSelecionadaId) return;
+
+      const mantenedor = document.getElementById("manual-mantenedor").value.trim();
+      const tipo = document.getElementById("manual-tipo").value.trim();
+      const feito = document.getElementById("manual-feito").value.trim();
+      const pecas = document.getElementById("manual-pecas").value.split(",").map(x => x.trim()).filter(Boolean);
+      const detalhes = document.getElementById("manual-detalhes").value.trim();
+
+      if (!mantenedor) {
+        alert("Selecione o mantenedor.");
+        return;
+      }
+
+      const payload = {
+        maquina_id: maquinaSelecionadaId,
+        data: hojeISO(),
+        horario: horaAgora(),
+        tipo: tipo || "Preventiva",
+        status: "OK",
+        mantenedor: mantenedor,
+        checklist: [],
+        o_que_foi_feito: feito,
+        pecas_trocadas: pecas,
+        detalhes: detalhes,
+        origem: "manual_web"
+      };
+
+      const resp = await fetch(API + "/api/manutencoes/mobile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        alert("Erro ao salvar manutenção.");
+        return;
+      }
+
+      alert("Manutenção registrada com sucesso.");
+      limparFormularioManual();
+      document.getElementById("form-manual").style.display = "none";
+      await carregarDados();
+      renderizarRegraManutencao(maquinaSelecionadaId);
+      renderizarListaDatas(maquinaSelecionadaId);
+    }
+
+    document.getElementById("btn-fechar-modal").addEventListener("click", fecharModal);
+    document.getElementById("modal-overlay").addEventListener("click", function(event) {
+      if (event.target.id === "modal-overlay") fecharModal();
+    });
+    document.getElementById("busca-maquina").addEventListener("input", renderizarLayout);
+    document.getElementById("btn-toggle-manual").addEventListener("click", function() {
+      const form = document.getElementById("form-manual");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+    document.getElementById("btn-salvar-manual").addEventListener("click", salvarManutencaoManual);
+
+    carregarDados();
+  </script>
+</body>
+</html>
